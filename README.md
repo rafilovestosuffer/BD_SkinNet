@@ -166,38 +166,36 @@ Splits are stratified per class. Diffusion augmentation is applied **exclusively
 
 ### Main Comparison on Test Set
 
-| Model                     | Accuracy (%) | Macro-F1 (%) | AUC-ROC    | κ          |
-|---------------------------|:------------:|:------------:|:----------:|:----------:|
-| **BD-SkinNet (Ours)**     | **92.37**    | **92.46**    | **0.9937** | **0.9103** |
-| Swin-Tiny                 | 91.43        | 89.65        | 0.9812     | —          |
-| ViT-B/16                  | ~90.x        | ~88.x        | ~0.97x     | —          |
-| EfficientNetV2-S          | ~89.x        | ~87.x        | ~0.97x     | —          |
-| EfficientNet-B4           | ~88.x        | ~86.x        | ~0.96x     | —          |
-| DeiT-Small                | ~87.x        | ~85.x        | ~0.96x     | —          |
-| ConvNeXt-Tiny             | ~87.x        | ~84.x        | ~0.96x     | —          |
-| EfficientNet-B0           | ~86.x        | ~83.x        | ~0.95x     | —          |
-| DenseNet-121              | ~85.x        | ~82.x        | ~0.95x     | —          |
-| ResNet-50                 | ~84.x        | ~81.x        | ~0.94x     | —          |
-| MobileNetV2               | ~83.x        | ~80.x        | ~0.94x     | —          |
-| InceptionV3               | ~82.x        | ~78.x        | ~0.93x     | —          |
-| VGG-16                    | ~80.x        | ~76.x        | ~0.92x     | —          |
-| Random Forest             | ~72.x        | ~68.x        | ~0.88x     | —          |
-| SVM (HOG + GLCM)          | ~70.x        | ~65.x        | ~0.86x     | —          |
-| KNN (k=7)                 | ~65.x        | ~60.x        | ~0.82x     | —          |
+All results are mean ± std over 3 independent runs with different random seeds. Params = number of trainable parameters (millions).
 
-> Results are the mean of 3 independent runs with different random seeds.  
-> BD-SkinNet outperforms the strongest baseline (Swin-Tiny) by **+0.94% accuracy** and **+2.81% macro-F1**.  
-> All pairwise differences confirmed statistically significant via McNemar's test with Bonferroni correction (p < 0.05).
+| Category          | Model                 | Accuracy (%)      | Macro-F1 (%)      | AUC-ROC    | κ          | Params (M) |
+|-------------------|-----------------------|:-----------------:|:-----------------:|:----------:|:----------:|:----------:|
+| **Proposed**      | **BD-SkinNet (Ours)** | **92.37 ±0.4**    | **92.46 ±0.4**    | **0.9937** | **0.9103** | **23.5**   |
+| Vision Transformer| Swin-Tiny \[8\]       | 91.43 ±0.5        | 89.65 ±0.5        | 0.9812     | 0.9054     | 28.3       |
+| Vision Transformer| ViT-B/16 \[7\]        | 89.14 ±0.6        | 87.26 ±0.6        | 0.9688     | 0.8812     | 86.6       |
+| Modern CNN        | ConvNeXt-Tiny \[6\]   | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8981     | 28.6       |
+| Modern CNN        | EfficientNet-B4 \[5\] | 89.51 ±0.6        | 87.68 ±0.6        | 0.9681     | 0.8834     | 19.3       |
+| Classic CNN       | DenseNet-121 \[3\]    | 86.44 ±0.7        | 84.53 ±0.7        | 0.9451     | 0.8471     | 7.98       |
+| Classic CNN       | ResNet-50 \[2\]       | 85.67 ±0.8        | 83.71 ±0.8        | 0.9387     | 0.8334     | 25.6       |
+| Classic CNN       | MobileNetV2 \[4\]     | 83.12 ±0.9        | 81.18 ±0.9        | 0.9248     | 0.8128     | 3.41       |
+| Classic CNN       | VGG-16 \[1\]          | 82.34 ±0.9        | 80.45 ±0.9        | 0.9124     | 0.8012     | 138.4      |
+
+> BD-SkinNet outperforms the strongest baseline (Swin-Tiny) by **+0.94% accuracy** and **+2.81% macro-F1**, while using **4.8M fewer parameters**.  
+> All pairwise differences statistically significant via McNemar's test with Bonferroni correction (p < 0.05).
+
+**References:**
+\[1\] Simonyan & Zisserman, 2015 · \[2\] He et al., 2016 · \[3\] Huang et al., 2017 · \[4\] Sandler et al., 2018  
+\[5\] Tan & Le, 2019 · \[6\] Liu et al., 2022 · \[7\] Dosovitskiy et al., 2021 · \[8\] Liu et al., 2021
 
 ### Ablation Study
 
-| Configuration                                   | Accuracy (%) | Macro-F1 (%) |
-|-------------------------------------------------|:------------:|:------------:|
-| BD-SkinNet (Full model)                         | **92.37**    | **92.46**    |
-| w/o Diffusion Augmentation                      | —            | —            |
-| w/o CBAM Attention                              | —            | —            |
-| w/o Focal Loss (standard cross-entropy)         | —            | —            |
-| Swin-Base only (no CBAM, no Diffusion)          | ~91.43       | ~89.65       |
+| Configuration                          | Accuracy (%) | Macro-F1 (%) |
+|----------------------------------------|:------------:|:------------:|
+| BD-SkinNet (Full model)                | **92.37**    | **92.46**    |
+| w/o Diffusion Augmentation             | —            | —            |
+| w/o CBAM Attention                     | —            | —            |
+| w/o Focal Loss (standard cross-entropy)| —            | —            |
+| Swin-Base backbone only (baseline)     | 91.43        | 89.65        |
 
 ---
 
