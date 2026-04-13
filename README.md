@@ -37,7 +37,7 @@ Accurate automated diagnosis of dermatological conditions in low-resource clinic
 
 ## Highlights
 
-- **Diffusion-augmented training:** Stable Diffusion v1.5 generates 500 synthetic images per class (guidance scale 7.5, strength 0.45) to mitigate class imbalance without naive oversampling artifacts.
+- **Diffusion-augmented training:** Stable Diffusion v1.5 generates 1,039 synthetic images across underrepresented classes (guidance scale 7.5, strength 0.45) to mitigate class imbalance without naive oversampling artifacts, expanding the corpus from 3,322 to 4,361 images.
 - **Multi-scale CBAM attention:** Channel and spatial attention gates applied across Swin Transformer stages to suppress irrelevant background texture in clinical photographs.
 - **Comprehensive evaluation:** Accuracy, Macro-F1, Weighted-F1, AUC-ROC, Cohen's Kappa (κ), Matthews Correlation Coefficient, and per-class breakdowns.
 - **Rigorous baseline comparison:** Benchmarked against 13 models spanning traditional ML (SVM, RF, KNN), classic CNNs (VGG-16, ResNet-50, DenseNet-121), modern CNNs (EfficientNet family, ConvNeXt), and Vision Transformers (ViT-B/16, DeiT-Small, Swin-Tiny).
@@ -134,16 +134,31 @@ BD-SkinNet is trained on a merged corpus of two publicly available Bangladeshi c
 
 ### Merged Corpus Summary
 
-| Split      | Images    | Ratio |
-|------------|-----------|-------|
-| Train      | 2,325     | 70%   |
-| Validation | 499       | 15%   |
-| Test       | 498       | 15%   |
-| **Total**  | **3,322** | —     |
+| Split                        | Images    | Ratio |
+|------------------------------|-----------|-------|
+| Train                        | 2,325     | 70%   |
+| Validation                   | 499       | 15%   |
+| Test                         | 498       | 15%   |
+| **Total (pre-augmentation)** | **3,322** | —     |
+| Diffusion-generated          | +1,039    | —     |
+| **Total (post-augmentation)**| **4,361** | —     |
 
-**Unified Classes (7):** Atopic Dermatitis · Contact Dermatitis · Eczema · Scabies · Seborrheic Dermatitis · Tinea · Vitiligo
+Splits are stratified per class. Diffusion augmentation is applied **exclusively on the training split**.
 
-Splits are stratified per class. Diffusion augmentation (500 synthetic images/class) is applied exclusively on the **training split**.
+### Post-Augmentation Class Distribution (Training Set)
+
+| Class                 | Images |
+|-----------------------|-------:|
+| Eczema                |    847 |
+| Contact Dermatitis    |    779 |
+| Scabies               |    644 |
+| Tinea                 |    591 |
+| Vitiligo              |    500 |
+| Atopic Dermatitis     |    500 |
+| Seborrheic Dermatitis |    500 |
+| **Total**             |  **4,361** |
+
+> Stable Diffusion v1.5 (20 steps, guidance scale 7.5, strength 0.45) synthesized 1,039 images targeted at the four minority classes (Vitiligo, Atopic Dermatitis, Seborrheic Dermatitis, Tinea) to reduce inter-class imbalance without duplicating real clinical samples.
 
 ---
 
