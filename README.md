@@ -10,6 +10,10 @@
 [![Jupyter](https://img.shields.io/badge/Notebook-Jupyter-F37626?style=flat-square&logo=jupyter)](BD_SkinNet_Model_Main.ipynb)
 [![Dataset](https://img.shields.io/badge/Dataset-Mendeley%20Data-9B59B6?style=flat-square)](https://data.mendeley.com/)
 
+[![Accuracy](https://img.shields.io/badge/Accuracy-92.37%25-brightgreen?style=flat-square)](results/RESULTS.md)
+[![Macro F1](https://img.shields.io/badge/Macro--F1-92.46%25-brightgreen?style=flat-square)](results/RESULTS.md)
+[![AUC-ROC](https://img.shields.io/badge/AUC--ROC-0.9937-brightgreen?style=flat-square)](results/RESULTS.md)
+
 </div>
 
 ---
@@ -164,6 +168,8 @@ Splits are stratified per class. Diffusion augmentation is applied **exclusively
 
 ## Results
 
+> Full results including per-class breakdown, figures, and ablation details: [results/RESULTS.md](results/RESULTS.md)
+
 ### Main Comparison on Test Set
 
 All results are mean ± std over 3 independent runs with different random seeds. Params = number of trainable parameters (millions).
@@ -227,22 +233,31 @@ Each row removes one component from the full BD-SkinNet. ΔF1 = absolute drop in
 
 ### Environment Setup
 
+**Option A — Conda (recommended)**
+
 ```bash
-# 1. Clone the repository
 git clone https://github.com/rafilovestosuffer/BD_SkinNet.git
 cd BD_SkinNet
 
-# 2. Create virtual environment
+conda env create -f environment.yml
+conda activate bdskinet
+
+# Install PyTorch with the correct CUDA version for your GPU
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+```
+
+**Option B — pip**
+
+```bash
+git clone https://github.com/rafilovestosuffer/BD_SkinNet.git
+cd BD_SkinNet
+
 python -m venv venv
 source venv/bin/activate        # Linux / macOS
 # venv\Scripts\activate         # Windows
 
-# 3. Install PyTorch (adjust CUDA version as needed)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# 4. Install remaining dependencies
-pip install timm albumentations diffusers transformers accelerate
-pip install scikit-learn matplotlib seaborn grad-cam jupyter
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+pip install -r requirements.txt
 ```
 
 ---
@@ -251,7 +266,15 @@ pip install scikit-learn matplotlib seaborn grad-cam jupyter
 
 ### 1. Prepare Datasets
 
-Download both datasets from Mendeley Data ([SkinDiseaseBD](https://doi.org/10.17632/9ggd3shdr7.2) · [SkinDisNet](https://doi.org/10.17632/yj3md44hxg.2)) and organize them as:
+Run the download script to automatically fetch, merge, and split both datasets:
+
+```bash
+python download_data.py
+```
+
+> Mendeley may require a browser login. If the download fails, the script prints manual instructions. Datasets: [SkinDiseaseBD](https://doi.org/10.17632/9ggd3shdr7.2) · [SkinDisNet](https://doi.org/10.17632/yj3md44hxg.2)
+
+The script produces the following structure:
 
 ```
 data/
@@ -296,6 +319,10 @@ BD_SkinNet/
 ├── BD_SkinNet_Model_Main.ipynb         # Main model: architecture, training, evaluation,
 │                                       # GradCAM++, t-SNE, ROC/PR curves
 ├── baseline_evaluation.py              # Comprehensive baseline comparison (15 models)
+├── download_data.py                    # Downloads and organizes both Mendeley datasets
+├── requirements.txt                    # pip dependencies
+├── environment.yml                     # Conda environment
+├── results/                            # Saved figures and full results report
 ├── LICENSE                             # MIT License
 └── README.md
 ```
