@@ -16,7 +16,7 @@
 
 ## Abstract
 
-Accurate automated diagnosis of dermatological conditions in low-resource clinical settings remains a significant challenge, particularly for diseases prevalent in South Asian populations that are underrepresented in global benchmark datasets. In this work, we introduce **BD-SkinNet**, a novel deep learning framework tailored for Bangladeshi clinical skin disease classification. BD-SkinNet integrates a **Swin Transformer backbone** with multi-scale **Convolutional Block Attention Modules (CBAM)** and employs **Stable Diffusion-based data augmentation** to address severe class imbalance in clinical image datasets. Our model is trained and evaluated on a merged corpus of 3,322 dermoscopic and clinical images spanning 7 disease classes, sourced from two publicly available Bangladeshi dermatology datasets. BD-SkinNet achieves **92.37% accuracy**, **92.46% macro-F1**, and **0.9937 AUC-ROC**, outperforming 13 baseline models including state-of-the-art Vision Transformers and EfficientNet variants. Statistical significance is confirmed via McNemar's test with Bonferroni correction across 3 random seeds.
+Accurate automated diagnosis of dermatological conditions in low-resource clinical settings remains a significant challenge, particularly for diseases prevalent in South Asian populations that are underrepresented in global benchmark datasets. In this work, we introduce **BD-SkinNet**, a novel deep learning framework tailored for Bangladeshi clinical skin disease classification. BD-SkinNet integrates a **Swin Transformer backbone** with multi-scale **Convolutional Block Attention Modules (CBAM)** and employs **Stable Diffusion-based data augmentation** to address severe class imbalance in clinical image datasets. Our model is trained and evaluated on a merged corpus of 3,322 dermoscopic and clinical images spanning 7 disease classes, sourced from two publicly available Bangladeshi dermatology datasets. BD-SkinNet achieves **92.37% accuracy**, **92.46% macro-F1**, and **0.9937 AUC-ROC**, outperforming 15 baseline models including state-of-the-art Vision Transformers and EfficientNet variants. Statistical significance is confirmed via McNemar's test with Bonferroni correction across 3 random seeds.
 
 ---
 
@@ -40,7 +40,7 @@ Accurate automated diagnosis of dermatological conditions in low-resource clinic
 - **Diffusion-augmented training:** Stable Diffusion v1.5 generates 1,039 synthetic images across underrepresented classes (guidance scale 7.5, strength 0.45) to mitigate class imbalance without naive oversampling artifacts, expanding the corpus from 3,322 to 4,361 images.
 - **Multi-scale CBAM attention:** Channel and spatial attention gates applied across Swin Transformer stages to suppress irrelevant background texture in clinical photographs.
 - **Comprehensive evaluation:** Accuracy, Macro-F1, Weighted-F1, AUC-ROC, Cohen's Kappa (κ), Matthews Correlation Coefficient, and per-class breakdowns.
-- **Rigorous baseline comparison:** Benchmarked against 13 models spanning traditional ML (SVM, RF, KNN), classic CNNs (VGG-16, ResNet-50, DenseNet-121), modern CNNs (EfficientNet family, ConvNeXt), and Vision Transformers (ViT-B/16, DeiT-Small, Swin-Tiny).
+- **Rigorous baseline comparison:** Benchmarked against 15 models spanning traditional ML (SVM+HOG/GLCM, Random Forest, KNN+HOG), classic CNNs (VGG-16, ResNet-50, InceptionV3, DenseNet-121, MobileNetV2), modern CNNs (EfficientNet-B0, EfficientNet-B4, EfficientNetV2-S, ConvNeXt-Tiny), and Vision Transformers (ViT-B/16, DeiT-Small, Swin-Tiny).
 - **Explainability:** GradCAM++ saliency maps and t-SNE feature embeddings for interpretable predictions.
 - **Statistical validation:** McNemar's test with Bonferroni correction; results reported as mean ± std over 3 seeds.
 
@@ -168,24 +168,33 @@ Splits are stratified per class. Diffusion augmentation is applied **exclusively
 
 All results are mean ± std over 3 independent runs with different random seeds. Params = number of trainable parameters (millions).
 
-| Category          | Model                 | Accuracy (%)      | Macro-F1 (%)      | AUC-ROC    | κ          | Params (M) |
-|-------------------|-----------------------|:-----------------:|:-----------------:|:----------:|:----------:|:----------:|
-| **Proposed**      | **BD-SkinNet (Ours)** | **92.37 ±0.4**    | **92.46 ±0.4**    | **0.9937** | **0.9103** | **23.5**   |
-| Vision Transformer| Swin-Tiny \[8\]       | 91.43 ±0.5        | 89.65 ±0.5        | 0.9812     | 0.9054     | 28.3       |
-| Vision Transformer| ViT-B/16 \[7\]        | 89.14 ±0.6        | 87.26 ±0.6        | 0.9688     | 0.8812     | 86.6       |
-| Modern CNN        | ConvNeXt-Tiny \[6\]   | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8981     | 28.6       |
-| Modern CNN        | EfficientNet-B4 \[5\] | 89.51 ±0.6        | 87.68 ±0.6        | 0.9681     | 0.8834     | 19.3       |
-| Classic CNN       | DenseNet-121 \[3\]    | 86.44 ±0.7        | 84.53 ±0.7        | 0.9451     | 0.8471     | 7.98       |
-| Classic CNN       | ResNet-50 \[2\]       | 85.67 ±0.8        | 83.71 ±0.8        | 0.9387     | 0.8334     | 25.6       |
-| Classic CNN       | MobileNetV2 \[4\]     | 83.12 ±0.9        | 81.18 ±0.9        | 0.9248     | 0.8128     | 3.41       |
-| Classic CNN       | VGG-16 \[1\]          | 82.34 ±0.9        | 80.45 ±0.9        | 0.9124     | 0.8012     | 138.4      |
+| Category          | Model                      | Accuracy (%)      | Macro-F1 (%)      | AUC-ROC    | κ          | Params (M) |
+|-------------------|----------------------------|:-----------------:|:-----------------:|:----------:|:----------:|:----------:|
+| **Proposed**      | **BD-SkinNet (Ours)**      | **92.37 ±0.4**    | **92.46 ±0.4**    | **0.9937** | **0.9103** | **23.5**   |
+| Vision Transformer| Swin-Tiny \[11\]           | 91.43 ±0.5        | 89.65 ±0.5        | 0.9812     | 0.9054     | 28.3       |
+| Modern CNN        | ConvNeXt-Tiny \[9\]        | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8981     | 28.6       |
+| Modern CNN        | EfficientNetV2-S \[8\]     | 90.24 ±0.5        | 88.42 ±0.5        | 0.9724     | 0.8912     | 21.5       |
+| Vision Transformer| ViT-B/16 \[10\]            | 89.14 ±0.6        | 87.26 ±0.6        | 0.9688     | 0.8812     | 86.6       |
+| Modern CNN        | EfficientNet-B4 \[7\]      | 89.51 ±0.6        | 87.68 ±0.6        | 0.9681     | 0.8834     | 19.3       |
+| Vision Transformer| DeiT-Small \[12\]          | 88.67 ±0.6        | 86.77 ±0.6        | 0.9652     | 0.8771     | 22.1       |
+| Modern CNN        | EfficientNet-B0 \[7\]      | 87.73 ±0.7        | 85.84 ±0.7        | 0.9568     | 0.8612     | 5.3        |
+| Classic CNN       | DenseNet-121 \[4\]         | 86.44 ±0.7        | 84.53 ±0.7        | 0.9451     | 0.8471     | 7.98       |
+| Classic CNN       | ResNet-50 \[2\]            | 85.67 ±0.8        | 83.71 ±0.8        | 0.9387     | 0.8334     | 25.6       |
+| Classic CNN       | InceptionV3 \[3\]          | 84.88 ±0.8        | 82.54 ±0.8        | 0.9311     | 0.8241     | 27.2       |
+| Classic CNN       | MobileNetV2 \[5\]          | 83.12 ±0.9        | 81.18 ±0.9        | 0.9248     | 0.8128     | 3.41       |
+| Classic CNN       | VGG-16 \[1\]               | 82.34 ±0.9        | 80.45 ±0.9        | 0.9124     | 0.8012     | 138.4      |
+| Traditional ML    | Random Forest \[6\]        | 78.91             | 75.81             | 0.8731     | 0.7418     | —          |
+| Traditional ML    | SVM + HOG/GLCM             | 76.42             | 73.60             | 0.8524     | 0.7103     | —          |
+| Traditional ML    | KNN + HOG                  | 72.15             | 69.12             | 0.8301     | 0.6812     | —          |
 
 > BD-SkinNet outperforms the strongest baseline (Swin-Tiny) by **+0.94% accuracy** and **+2.81% macro-F1**, while using **4.8M fewer parameters**.  
+> DL results are mean ± std over 3 independent runs with different random seeds. Traditional ML models are deterministic (fixed seed).  
 > All pairwise differences statistically significant via McNemar's test with Bonferroni correction (p < 0.05).
 
 **References:**
-\[1\] Simonyan & Zisserman, 2015 · \[2\] He et al., 2016 · \[3\] Huang et al., 2017 · \[4\] Sandler et al., 2018  
-\[5\] Tan & Le, 2019 · \[6\] Liu et al., 2022 · \[7\] Dosovitskiy et al., 2021 · \[8\] Liu et al., 2021
+\[1\] Simonyan & Zisserman, 2015 · \[2\] He et al., 2016 · \[3\] Szegedy et al., 2016 · \[4\] Huang et al., 2017  
+\[5\] Sandler et al., 2018 · \[6\] Breiman, 2001 · \[7\] Tan & Le, 2019 · \[8\] Tan & Le, 2021  
+\[9\] Liu et al., 2022 · \[10\] Dosovitskiy et al., 2021 · \[11\] Liu et al., 2021 · \[12\] Touvron et al., 2021
 
 ### Ablation Study
 
@@ -272,7 +281,7 @@ jupyter notebook BD_SkinNet_Model_Main.ipynb
 python BD_SkinNet_Baseline_Complete_2.py
 ```
 
-Trains and evaluates all 16 baseline models and outputs a consolidated comparison table.
+Trains and evaluates all 15 baseline models and outputs a consolidated comparison table.
 
 ### 4. Explainability
 
