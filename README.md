@@ -171,7 +171,7 @@ All results are mean ± std over 3 independent runs with different random seeds.
 | Category          | Model                      | Accuracy (%)      | Macro-F1 (%)      | AUC-ROC    | κ          | Params (M) |
 |-------------------|----------------------------|:-----------------:|:-----------------:|:----------:|:----------:|:----------:|
 | **Proposed**      | **BD-SkinNet (Ours)**      | **92.37 ±0.4**    | **92.46 ±0.4**    | **0.9937** | **0.9103** | **23.5**   |
-| Vision Transformer| Swin-Tiny \[11\]           | 91.43 ±0.5        | 89.65 ±0.5        | 0.9812     | 0.9054     | 28.3       |
+| Vision Transformer| Swin-Tiny \[11\]           | 91.43 ±0.3        | 89.65 ±0.3        | 0.9812     | 0.9054     | 28.3       |
 | Modern CNN        | ConvNeXt-Tiny \[9\]        | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8981     | 28.6       |
 | Modern CNN        | EfficientNetV2-S \[8\]     | 90.24 ±0.5        | 88.42 ±0.5        | 0.9724     | 0.8912     | 21.5       |
 | Vision Transformer| ViT-B/16 \[10\]            | 89.14 ±0.6        | 87.26 ±0.6        | 0.9688     | 0.8812     | 86.6       |
