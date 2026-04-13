@@ -278,7 +278,7 @@ jupyter notebook BD_SkinNet_Model_Main.ipynb
 ### 3. Run Baseline Comparisons
 
 ```bash
-python BD_SkinNet_Baseline_Complete_2.py
+python baseline_evaluation.py
 ```
 
 Trains and evaluates all 15 baseline models and outputs a consolidated comparison table.
@@ -295,7 +295,7 @@ GradCAM++ saliency maps and t-SNE feature embedding visualizations are integrate
 BD_SkinNet/
 ├── BD_SkinNet_Model_Main.ipynb         # Main model: architecture, training, evaluation,
 │                                       # GradCAM++, t-SNE, ROC/PR curves
-├── BD_SkinNet_Baseline_Complete_2.py   # Comprehensive baseline comparison (16 models)
+├── baseline_evaluation.py              # Comprehensive baseline comparison (15 models)
 ├── LICENSE                             # MIT License
 └── README.md
 ```
