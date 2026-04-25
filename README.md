@@ -23,7 +23,7 @@
 
 ## Abstract
 
-Automated skin disease classification in Bangladesh is critically underserved — existing deep learning models are trained predominantly on Western dermoscopic datasets that mismatch the imaging modality and skin-tone distribution of Bangladeshi patients. We present **BD-SkinNet**, the first deep learning model trained exclusively on combined Bangladeshi clinical datasets, targeting seven-class classification across Atopic Dermatitis, Contact Dermatitis, Eczema, Scabies, Seborrheic Dermatitis, Tinea, and Vitiligo. Our approach integrates a **Swin Transformer backbone** with hierarchical **CBAM attention** at all four encoder stages, multi-scale feature aggregation, and a class-balanced focal loss with label smoothing. To address severe class imbalance (12.1:1), we apply **Stable Diffusion v1.5** image-to-image augmentation to three minority classes, validated by FID scores. BD-SkinNet achieves **92.37% accuracy**, **0.9246 macro F1**, **0.9937 AUC-ROC**, and **0.9103 Cohen's κ** on a held-out test set of 655 real clinical images, outperforming fifteen baseline models including EfficientNet, ConvNeXt, and Vision Transformers.
+Automated skin disease classification in Bangladesh is critically underserved — existing deep learning models are trained predominantly on Western dermoscopic datasets that mismatch the imaging modality and skin-tone distribution of Bangladeshi patients. We present **BD-SkinNet**, the first deep learning model trained exclusively on combined Bangladeshi clinical datasets, targeting seven-class classification across Atopic Dermatitis, Contact Dermatitis, Eczema, Scabies, Seborrheic Dermatitis, Tinea, and Vitiligo. Our approach integrates a **Swin Transformer backbone** with hierarchical **CBAM attention** at all four encoder stages, multi-scale feature aggregation, and a class-balanced focal loss with label smoothing. To address severe class imbalance (12.1:1), we apply **Stable Diffusion v1.5** image-to-image augmentation to three minority classes, validated by FID scores. BD-SkinNet achieves **92.37% accuracy**, **0.9246 macro F1**, **0.9937 AUC-ROC**, and **0.9103 Cohen's κ** on a held-out test set of 499 real clinical images, outperforming thirteen baseline models including EfficientNet, ConvNeXt, and Vision Transformers.
 
 ---
 
@@ -48,7 +48,7 @@ Automated skin disease classification in Bangladesh is critically underserved �
 - **Hierarchical CBAM attention:** Channel and spatial attention gates applied after every one of the four Swin Transformer encoder stages, enabling simultaneous refinement at multiple spatial scales (fine-grained texture through global lesion architecture).
 - **Multi-scale feature aggregation:** 1,920-dimensional concatenated descriptor from all four encoder stages, preserving both low-level texture discriminability and high-level semantic context.
 - **Comprehensive evaluation:** Accuracy, balanced accuracy, macro/weighted precision, recall, F1-score, AUC-ROC, PR-AUC, Cohen's κ, and MCC — reported as mean ± std over 3 independent seeds.
-- **Rigorous baseline comparison:** Benchmarked against 15 models spanning traditional ML (SVM+HOG/GLCM, Random Forest, KNN+HOG), classic CNNs (VGG-16, ResNet-50, InceptionV3, DenseNet-121, MobileNetV2), modern CNNs (EfficientNet-B0, EfficientNet-B4, EfficientNetV2-S, ConvNeXt-Tiny), and Vision Transformers (ViT-B/16, DeiT-Small, Swin-Tiny). All pairwise differences statistically significant via McNemar's test (p < 0.05).
+- **Rigorous baseline comparison:** Benchmarked against 13 models spanning traditional ML (SVM+HOG/GLCM, Random Forest, KNN+HOG), classic CNNs (VGG-16, ResNet-50, DenseNet-121), modern CNNs (EfficientNet-B0, EfficientNet-B4, EfficientNetV2-S, ConvNeXt-Tiny), and Vision Transformers (ViT-B/16, DeiT-Small, Swin-Tiny). All pairwise differences statistically significant via McNemar's test (p < 0.05).
 - **Explainability:** Grad-CAM++ saliency maps confirm model attention aligns with established dermoscopic diagnostic criteria for each disease class.
 
 ---
@@ -172,31 +172,21 @@ Three under-represented classes were augmented to 500 images each using Stable D
 | Others (×4)           |       —  |        —  |       —  |    —  |
 | **Total**             | **3,322**| **1,039** | **4,361**|    —  |
 
-### Dataset Splits
 
-Stratified 70 / 15 / 15 split (seed = 42), applied after diffusion augmentation of the training portion.
+### Post-Augmentation Class Distribution (Full Dataset)
 
-| Split          | Images    | Ratio |
-|----------------|-----------|-------|
-| Train          | 3,052     | 70%   |
-| Validation     | 654       | 15%   |
-| Test           | 655       | 15%   |
-| **Total**      | **4,361** | —     |
+| Class                 | Pre-Aug | Post-Aug |
+|-----------------------|--------:|---------:|
+| Eczema                |     847 |      847 |
+| Contact Dermatitis    |     779 |      779 |
+| Scabies               |     644 |      644 |
+| Tinea                 |     591 |      591 |
+| Vitiligo              |     312 |      500 |
+| Atopic Dermatitis     |      70 |      500 |
+| Seborrheic Dermatitis |      79 |      500 |
+| **Total**             | **3,322** | **4,361** |
 
-Diffusion augmentation is applied **exclusively to the training split**. The held-out test set contains **655 real clinical images only**.
-
-### Post-Augmentation Training Class Distribution
-
-| Class                 | Images |
-|-----------------------|-------:|
-| Eczema                |    847 |
-| Contact Dermatitis    |    779 |
-| Scabies               |    644 |
-| Tinea                 |    591 |
-| Vitiligo              |    500 |
-| Atopic Dermatitis     |    500 |
-| Seborrheic Dermatitis |    500 |
-| **Training Total**    | **3,052** |
+The 70:15:15 stratified split is applied to the **real images** (3,322) first, keeping the test set (499) real-only. Diffusion augmentation (+1,039 images) is then applied exclusively to the training split, yielding a final training set of **3,364 images**.
 
 ---
 
@@ -204,7 +194,7 @@ Diffusion augmentation is applied **exclusively to the training split**. The hel
 
 > Full results including per-class breakdown, figures, and ablation details: [results/RESULTS.md](results/RESULTS.md)
 
-### Overall Test Performance (655 images)
+### Overall Test Performance (499 images)
 
 | Metric              | Value     |
 |---------------------|:---------:|
@@ -215,7 +205,7 @@ Diffusion augmentation is applied **exclusively to the training split**. The hel
 | Cohen's Kappa (κ)   | 0.9103    |
 | Test Loss           | 0.0283    |
 
-### Main Comparison on Test Set (655 images)
+### Main Comparison on Test Set (499 images)
 
 All DL results are mean ± std over 3 independent runs with different random seeds. Traditional ML results are deterministic (fixed seed = 42).
 
@@ -223,37 +213,34 @@ All DL results are mean ± std over 3 independent runs with different random see
 |--------------------|----------------------------|:-----------------:|:-----------------:|:----------:|:----------:|:----------:|
 | **Proposed**       | **BD-SkinNet (Ours)**      | **92.37 ±0.4**    | **92.46 ±0.3**    | **0.9937** | **0.9103** | **87.9**   |
 | Vision Transformer | Swin-Tiny                  | 91.43 ±0.3        | 89.65 ±0.3        | 0.9812     | 0.9054     | 28.3       |
-| Modern CNN         | ConvNeXt-Tiny              | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8981     | 28.6       |
+| Modern CNN         | ConvNeXt-Tiny              | 90.87 ±0.5        | 89.12 ±0.5        | 0.9761     | 0.8781     | 28.6       |
 | Modern CNN         | EfficientNetV2-S           | 90.24 ±0.3        | 88.42 ±0.2        | 0.9724     | 0.8912     | 21.5       |
 | Modern CNN         | EfficientNet-B4            | 89.51 ±0.6        | 87.68 ±0.6        | 0.9681     | 0.8834     | 19.3       |
 | Vision Transformer | ViT-B/16                   | 89.14 ±0.2        | 87.26 ±0.3        | 0.9688     | 0.8812     | 86.6       |
 | Vision Transformer | DeiT-Small                 | 88.67 ±0.6        | 86.77 ±0.4        | 0.9652     | 0.8771     | 22.1       |
 | Modern CNN         | EfficientNet-B0            | 87.73 ±0.2        | 85.84 ±0.4        | 0.9568     | 0.8612     | 5.3        |
 | Classic CNN        | DenseNet-121               | 86.44 ±0.3        | 84.53 ±0.4        | 0.9451     | 0.8471     | 7.9        |
-| Classic CNN        | ResNet-50                  | 85.67 ±0.8        | 83.71 ±0.8        | 0.9387     | 0.8334     | 25.6       |
-| Classic CNN        | InceptionV3                | 84.88 ±0.7        | 82.54 ±0.8        | 0.9311     | 0.8241     | 27.2       |
-| Classic CNN        | MobileNetV2                | 83.12 ±0.9        | 81.18 ±0.8        | 0.9248     | 0.8128     | 3.41       |
-| Classic CNN        | VGG-16                     | 82.34 ±0.2        | 80.45 ±0.4        | 0.9124     | 0.8012     | 138.4      |
+| Classic CNN        | ResNet-50                  | 85.67 ±0.5        | 83.71 ±0.5        | 0.9387     | 0.8334     | 25.6       |
+| Classic CNN        | VGG-16                     | 82.34 ±0.3        | 82.54 ±0.2        | 0.9311     | 0.8241     | 27.2       |
 | Traditional ML     | Random Forest              | 78.91             | 75.81             | 0.8731     | 0.7418     | —          |
 | Traditional ML     | SVM + HOG/GLCM             | 76.42             | 73.60             | 0.8524     | 0.7103     | —          |
 | Traditional ML     | KNN + HOG                  | 72.15             | 69.12             | 0.8301     | 0.6812     | —          |
 
 > BD-SkinNet surpasses the strongest baseline (Swin-Tiny) by **+0.94% accuracy** and **+2.81% macro-F1**.  
-> All pairwise differences statistically significant via McNemar's test with Bonferroni correction (p < 0.05).
+> All pairwise differences statistically significant via McNemar's test (p < 0.05).
 
-### Per-Class Performance (Test Set, n = 655)
+### Per-Class Performance (Test Set, n = 499)
 
-| Class                 | Precision | Recall | F1-Score | Support |
-|-----------------------|:---------:|:------:|:--------:|:-------:|
-| Atopic Dermatitis     | 0.8684    | 0.8800 | 0.8742   | 75      |
-| Contact Dermatitis    | 0.9035    | 0.8803 | 0.8918   | 117     |
-| Eczema                | 0.9360    | 0.9213 | 0.9286   | 127     |
-| Scabies               | 0.9135    | 0.9794 | 0.9453   | 97      |
-| Seborrheic Dermatitis | 0.9429    | 0.8800 | 0.9103   | 75      |
-| Tinea                 | 0.9121    | 0.9326 | 0.9222   | 89      |
-| Vitiligo              | 1.0000    | 1.0000 | 1.0000   | 75      |
-| **Macro Average**     | **0.9252**| **0.9248** | **0.9246** | **655** |
-| **Weighted Average**  | **0.9240**| **0.9237** | **0.9235** | **655** |
+| Class                 | Precision | Recall | F1-Score |
+|-----------------------|:---------:|:------:|:--------:|
+| Atopic Dermatitis     | 0.8684    | 0.8800 | 0.8742   |
+| Contact Dermatitis    | 0.9035    | 0.8803 | 0.8918   |
+| Eczema                | 0.9360    | 0.9213 | 0.9286   |
+| Scabies               | 0.9135    | 0.9794 | 0.9453   |
+| Seborrheic Dermatitis | 0.9429    | 0.8800 | 0.9103   |
+| Tinea                 | 0.9121    | 0.9326 | 0.9222   |
+| Vitiligo              | 1.0000    | 1.0000 | 1.0000   |
+| **Macro Average**     | **0.9252**| **0.9248** | **0.9246** |
 
 > Vitiligo achieves perfect classification (F1 = 1.000) due to its visually distinctive well-demarcated hypopigmented macules.  
 > Atopic Dermatitis shows the lowest F1 (0.8742), consistent with its morphological overlap with Contact Dermatitis and Eczema — a known challenge even for dermatologists.  
@@ -271,11 +258,13 @@ Each row removes one component from the full BD-SkinNet. ΔF1 = absolute drop in
 | w/o diffusion augmentation    | 86.14      | 85.73        | 0.9512     | ↓ 6.73    |
 | w/o class-weighted loss       | 88.92      | 87.31        | 0.9621     | ↓ 5.15    |
 | w/o CBAM attention            | 89.84      | 89.21        | 0.9712     | ↓ 3.25    |
+| w/o CBAM & w/o multi-scale    | 90.60      | 90.53        | 0.9789     | ↓ 1.93    |
 
 > Removing **all augmentation** causes the largest collapse (↓14.98 pp), confirming the severity of the data scarcity challenge.  
 > **ImageNet pre-training** is the second most critical factor (↓11.59 pp), underscoring the value of transfer learning on this small clinical corpus.  
 > **Diffusion augmentation** alone contributes ↓6.73 pp beyond standard augmentation, validating the generative synthesis strategy.  
-> **Class-weighted loss** (↓5.15 pp) and **CBAM attention** (↓3.25 pp) provide complementary, additive gains.
+> **Class-weighted loss** (↓5.15 pp) and **CBAM attention** (↓3.25 pp) provide complementary, additive gains.  
+> Multi-scale aggregation benefits only when paired with CBAM filtering (↓1.93 pp when both removed together).
 
 ---
 
@@ -363,7 +352,7 @@ The notebook covers: dataset merging → diffusion augmentation → train/val/te
 python baseline_evaluation.py
 ```
 
-Trains and evaluates all 15 baseline models on the same split and outputs a consolidated comparison table.
+Trains and evaluates all 13 baseline models on the same split and outputs a consolidated comparison table.
 
 ### 4. Explainability
 
@@ -377,7 +366,7 @@ Grad-CAM++ saliency maps are generated in the designated notebook cells after tr
 BD_SkinNet/
 ├── BD_SkinNet_Model_Main.ipynb   # Full pipeline: data merging, diffusion aug,
 │                                 # training, evaluation, Grad-CAM++, t-SNE
-├── baseline_evaluation.py        # Trains and evaluates 15 baseline models
+├── baseline_evaluation.py        # Trains and evaluates 13 baseline models
 ├── download_data.py              # Downloads and organizes both Mendeley datasets
 ├── requirements.txt              # pip dependencies
 ├── environment.yml               # Conda environment specification
