@@ -772,6 +772,93 @@ Then: Save & Run All → Output tab → save as dataset "bdskinnet-checkpoint"
 Then: Add that dataset as input to THIS notebook
 """
 
+# ── CBAM attention modules — module-level so run_ablation() can use them ──────
+class ChannelAttention(nn.Module):
+    """Channel attention: MLP(avg_pool) + MLP(max_pool), sigmoid. Paper Eq. (1)."""
+    def __init__(self, channels, reduction=16):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(channels, channels // reduction, bias=False),
+            nn.ReLU(),
+            nn.Linear(channels // reduction, channels, bias=False),
+        )
+    def forward(self, x):
+        avg = self.mlp(x.mean(dim=[2, 3]))
+        mx  = self.mlp(x.amax(dim=[2, 3]))
+        return torch.sigmoid(avg + mx).unsqueeze(-1).unsqueeze(-1)
+
+
+class SpatialAttention(nn.Module):
+    """Spatial attention: 7×7 conv on [avg_c, max_c], sigmoid. Paper Eq. (2)."""
+    def __init__(self, kernel_size=7):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2, bias=False)
+    def forward(self, x):
+        avg = x.mean(dim=1, keepdim=True)
+        mx  = x.amax(dim=1, keepdim=True)
+        return torch.sigmoid(self.conv(torch.cat([avg, mx], dim=1)))
+
+
+class CBAM(nn.Module):
+    """Convolutional Block Attention Module (Woo et al. ECCV 2018)."""
+    def __init__(self, channels, reduction=16, spatial_kernel=7):
+        super().__init__()
+        self.ca = ChannelAttention(channels, reduction)
+        self.sa = SpatialAttention(spatial_kernel)
+    def forward(self, x):
+        x = x * self.ca(x)
+        x = x * self.sa(x)
+        return x
+
+
+class BDSkinNet(nn.Module):
+    """
+    BD-SkinNet architecture (paper Section III-D):
+    swin_base_patch4_window7_224 (ImageNet-21K) → CBAM at each of 4 stages →
+    global-average-pool each stage → 128+256+512+1024 = 1920-d concat →
+    Dropout(0.4) → Linear(1920→512) → LayerNorm → GELU →
+    Dropout(0.2) → Linear(512→7).
+    """
+    def __init__(self, num_classes=7, pretrained=False):
+        super().__init__()
+        self.backbone = timm.create_model(
+            "swin_base_patch4_window7_224",
+            pretrained=pretrained,
+            features_only=True,
+            out_indices=(0, 1, 2, 3),
+        )
+        stage_dims = [128, 256, 512, 1024]
+        self.cbams  = nn.ModuleList([CBAM(d) for d in stage_dims])
+        self.gap    = nn.AdaptiveAvgPool2d(1)
+        feat_dim    = sum(stage_dims)   # 1920
+        self.head   = nn.Sequential(
+            nn.Dropout(0.4),
+            nn.Linear(feat_dim, 512),
+            nn.LayerNorm(512),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(512, num_classes),
+        )
+
+    def forward(self, x):
+        feats  = self.backbone(x)
+        pooled = []
+        for feat, cbam in zip(feats, self.cbams):
+            # timm Swin: (N, H, W, C) or (N, H*W, C) depending on version
+            if feat.dim() == 4:
+                feat = feat.permute(0, 3, 1, 2).contiguous()
+            elif feat.dim() == 3:
+                N, L2, C = feat.shape
+                L = int(L2 ** 0.5)
+                feat = feat.reshape(N, L, L, C).permute(0, 3, 1, 2).contiguous()
+            feat = cbam(feat)
+            pooled.append(self.gap(feat).flatten(1))
+        return self.head(torch.cat(pooled, dim=1))
+
+
+print("✅ BD-SkinNet architecture classes ready (CBAM + Swin-Base)")
+
+
 def load_bdskinnet():
     print(f"\n{'═'*60}")
     print("  BD-SkinNet — Your Model Evaluation")
@@ -809,85 +896,6 @@ def load_bdskinnet():
         return
 
 
-
-    # ── CBAM attention modules (paper Eqs. 1–2) ──────────────────────────────
-    class ChannelAttention(nn.Module):
-        def __init__(self, channels, reduction=16):
-            super().__init__()
-            self.mlp = nn.Sequential(
-                nn.Linear(channels, channels // reduction, bias=False),
-                nn.ReLU(),
-                nn.Linear(channels // reduction, channels, bias=False),
-            )
-        def forward(self, x):
-            avg = self.mlp(x.mean(dim=[2, 3]))
-            mx  = self.mlp(x.amax(dim=[2, 3]))
-            return torch.sigmoid(avg + mx).unsqueeze(-1).unsqueeze(-1)
-
-    class SpatialAttention(nn.Module):
-        def __init__(self, kernel_size=7):
-            super().__init__()
-            self.conv = nn.Conv2d(2, 1, kernel_size,
-                                  padding=kernel_size // 2, bias=False)
-        def forward(self, x):
-            avg = x.mean(dim=1, keepdim=True)
-            mx  = x.amax(dim=1, keepdim=True)
-            return torch.sigmoid(self.conv(torch.cat([avg, mx], dim=1)))
-
-    class CBAM(nn.Module):
-        def __init__(self, channels, reduction=16, spatial_kernel=7):
-            super().__init__()
-            self.ca = ChannelAttention(channels, reduction)
-            self.sa = SpatialAttention(spatial_kernel)
-        def forward(self, x):
-            x = x * self.ca(x)
-            x = x * self.sa(x)
-            return x
-
-    # ── BD-SkinNet: Swin-Base + stage-wise CBAM + multi-scale GAP + MLP head ──
-    class BDSkinNet(nn.Module):
-        """
-        BD-SkinNet architecture (paper Section III-D):
-        swin_base_patch4_window7_224 (ImageNet-21K) → CBAM at each of 4 stages →
-        global-average-pool each stage → 128+256+512+1024 = 1920-d concat →
-        Dropout(0.4) → Linear(1920→512) → LayerNorm → GELU →
-        Dropout(0.2) → Linear(512→7).
-        """
-        def __init__(self, num_classes=7, pretrained=False):
-            super().__init__()
-            self.backbone = timm.create_model(
-                "swin_base_patch4_window7_224",
-                pretrained=pretrained,
-                features_only=True,
-                out_indices=(0, 1, 2, 3),
-            )
-            stage_dims = [128, 256, 512, 1024]
-            self.cbams  = nn.ModuleList([CBAM(d) for d in stage_dims])
-            self.gap    = nn.AdaptiveAvgPool2d(1)
-            feat_dim    = sum(stage_dims)   # 1920
-            self.head   = nn.Sequential(
-                nn.Dropout(0.4),
-                nn.Linear(feat_dim, 512),
-                nn.LayerNorm(512),
-                nn.GELU(),
-                nn.Dropout(0.2),
-                nn.Linear(512, num_classes),
-            )
-
-        def forward(self, x):
-            feats  = self.backbone(x)
-            pooled = []
-            for feat, cbam in zip(feats, self.cbams):
-                # timm Swin: (N, H, W, C) or (N, H*W, C) depending on version
-                if feat.dim() == 4:
-                    feat = feat.permute(0, 3, 1, 2).contiguous()
-                elif feat.dim() == 3:
-                    N, L2, C = feat.shape
-                    L = int(L2 ** 0.5)
-                    feat = feat.reshape(N, L, L, C).permute(0, 3, 1, 2).contiguous()
-                feat = cbam(feat)
-                pooled.append(self.gap(feat).flatten(1))
-            return self.head(torch.cat(pooled, dim=1))
 
     device = CFG["device"]
     model  = BDSkinNet(NUM_CLASSES).to(device)
